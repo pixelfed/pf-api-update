@@ -59,10 +59,10 @@ class UpdateVersionsCommand extends Command
             "updatesAvailable" => $versionsMap
         ];
 
-        Storage::put('public/api/versions.json', json_encode($updates, JSON_UNESCAPED_SLASHES));
+        Storage::put('public/api/latest.json', json_encode($updates, JSON_UNESCAPED_SLASHES));
 
         $this->info('Finished generating version data!');
         $this->line(' ');
-        $this->info(url('public/api/versions.json'));
+        $this->info(url('public/api/latest.json'));
     }
 }
