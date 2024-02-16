@@ -18,15 +18,17 @@ class GithubVersionService
 
     public static function get()
     {
-        $api = 'https://api.github.com/repos/pixelfed/pixelfed/releases';
-        $res = Http::acceptJson()->get($api);
+        return Cache::remember('gvs:latest-versions:v1.2', 900, function() {
+            $api = 'https://api.github.com/repos/pixelfed/pixelfed/releases?per_page=6';
+            $res = Http::withToken(config('api.gh_token'))->acceptJson()->get($api);
 
-        if(!$res->ok()) {
-            return false;
-        }
+            if(!$res->ok()) {
+                return false;
+            }
 
-        $json = $res->json();
+            $json = $res->json();
 
-        return $json;
+            return $json;
+        });
     }
 }

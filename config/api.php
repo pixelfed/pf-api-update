@@ -1,7 +1,5 @@
 <?php
 
 return [
-    'urgent' => [
-        'versions' => env('PAU_URGENT_VERSIONS', ''),
-    ]
+    'gh_token' => env('PAI_GH_TOKEN'),
 ];

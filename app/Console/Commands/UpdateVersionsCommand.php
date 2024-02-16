@@ -29,40 +29,28 @@ class UpdateVersionsCommand extends Command
      */
     public function handle()
     {
-        $api = 'https://api.github.com/repos/pixelfed/pixelfed/releases';
-        $res = Http::acceptJson()->get($api);
+        $res = collect(GithubVersionService::get())
+        ->map(function($version) {
+            $name = $version['name'];
 
-        if(!$res->ok()) {
-            return;
-        }
-
-        $versions = $res->json();
-
-        if(!$versions) {
-            return;
-        }
-
-        $urgent = GithubVersionService::urgent();
-
-        $versionsMap = collect($versions)->map(function($ver, $idx) use($urgent) {
             return [
-                'version' => str_starts_with($ver['tag_name'], 'v') ? substr($ver['tag_name'], 1) : $ver['tag_name'],
-                'latest' => $idx == 0,
-                'urgent' => in_array($ver['tag_name'], $urgent),
-                'published_at' => $ver['published_at'],
-                'release_url' => $ver['html_url'],
-                'release_notes' => $ver['body'],
+                'id' => $version['id'],
+                'name' => $version['name'],
+                'version' => substr($version['name'], 1),
+                'url' => $version['html_url'],
+                'published_at' => $version['published_at']
             ];
-        })->take(4);
-
-        $updates = [
-            "updatesAvailable" => $versionsMap
+        });
+        $latest = $res->shift();
+        $response = [
+            'latest' => $latest,
+            'older' => $res,
         ];
 
-        Storage::put('public/api/latest.json', json_encode($updates, JSON_UNESCAPED_SLASHES));
+        file_put_contents(public_path('versions.json'), json_encode($response, JSON_UNESCAPED_SLASHES));
 
         $this->info('Finished generating version data!');
         $this->line(' ');
-        $this->info(url('public/api/latest.json'));
+        $this->info(url('versions.json'));
     }
 }
